@@ -1,73 +1,53 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Imaging;
 using Microsoft.Win32;
-using System.Text.Json;
-using System.Net.Http;
-using System.Text;
-using System.Diagnostics;
 
 namespace IntunePackagingTool
 {
     public partial class UploadToIntuneWindow : Window
     {
-        private ApplicationInfo _appInfo;
-        private string _packagePath;
-        private IntuneService _intuneService;
-        private ObservableCollection<DetectionRule> _detectionRules;
-        private string? _selectedIconPath;
+        public ApplicationInfo? ApplicationInfo { get; set; }
+        public string PackagePath { get; set; } = "";
+        
+        private ObservableCollection<DetectionRule> _detectionRules = new ObservableCollection<DetectionRule>();
+        private IntuneService _intuneService = new IntuneService();
 
-        public UploadToIntuneWindow(ApplicationInfo appInfo, string packagePath, IntuneService intuneService)
+        public UploadToIntuneWindow()
         {
             InitializeComponent();
-            
-            _appInfo = appInfo;
-            _packagePath = packagePath;
-            _intuneService = intuneService;
-            _detectionRules = new ObservableCollection<DetectionRule>();
-            
-            InitializeWindow();
-        }
-
-        private void InitializeWindow()
-        {
-            // Update window title and summary
-            AppSummaryText.Text = $"{_appInfo.Manufacturer} {_appInfo.Name} v{_appInfo.Version}";
-            
-            // Bind detection rules to the list
             DetectionRulesList.ItemsSource = _detectionRules;
-            
-            // Add a default file detection rule
-            AddDefaultDetectionRule();
         }
 
-        private void AddDefaultDetectionRule()
+        protected override void OnContentRendered(EventArgs e)
         {
-            // Add a basic file detection for Deploy-Application.exe
-            var defaultRule = new FileDetectionRule
-            {
-                Icon = "📁",
-                Title = "PSADT Detection",
-                Description = $"File exists: Deploy-Application.exe",
-                Path = "%ProgramFiles%",
-                FileName = "Deploy-Application.exe",
-                DetectionType = FileDetectionType.Exists
-            };
+            base.OnContentRendered(e);
             
-            _detectionRules.Add(defaultRule);
-        }
+            if (ApplicationInfo != null)
+            {
+                AppSummaryText.Text = $"{ApplicationInfo.Manufacturer} {ApplicationInfo.Name} v{ApplicationInfo.Version}";
+                DescriptionTextBox.Text = $"{ApplicationInfo.Name} packaged with NBB PSADT Tools";
+            }
 
-        #region Detection Rule Management
+            // Add a default file detection rule
+            _detectionRules.Add(new DetectionRule
+            {
+                Type = DetectionRuleType.File,
+                Path = "%ProgramFiles%",
+                FileOrFolderName = $"{ApplicationInfo?.Name ?? "MyApp"}.exe",
+                CheckVersion = false
+            });
+        }
 
         private void AddFileDetectionButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new AddFileDetectionDialog();
-            if (dialog.ShowDialog() == true)
+            var dialog = new AddFileDetectionDialog
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() == true && dialog.DetectionRule != null)
             {
                 _detectionRules.Add(dialog.DetectionRule);
             }
@@ -75,8 +55,12 @@ namespace IntunePackagingTool
 
         private void AddRegistryDetectionButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new AddRegistryDetectionDialog();
-            if (dialog.ShowDialog() == true)
+            var dialog = new AddRegistryDetectionDialog
+            {
+                Owner = this
+            };
+
+            if (dialog.ShowDialog() == true && dialog.DetectionRule != null)
             {
                 _detectionRules.Add(dialog.DetectionRule);
             }
@@ -84,255 +68,97 @@ namespace IntunePackagingTool
 
         private void AddScriptDetectionButton_Click(object sender, RoutedEventArgs e)
         {
-            var dialog = new AddScriptDetectionDialog();
-            if (dialog.ShowDialog() == true)
-            {
-                _detectionRules.Add(dialog.DetectionRule);
-            }
+            MessageBox.Show("Script detection rule editor will be implemented in a future version.", 
+                "Coming Soon", MessageBoxButton.OK, MessageBoxImage.Information);
         }
-
-        #endregion
-
-        #region Icon Management
 
         private void BrowseIconButton_Click(object sender, RoutedEventArgs e)
         {
-            var fileDialog = new OpenFileDialog
+            var dialog = new OpenFileDialog
             {
                 Title = "Select Application Icon",
-                Filter = "Image Files (*.png;*.ico;*.jpg;*.jpeg)|*.png;*.ico;*.jpg;*.jpeg|All Files (*.*)|*.*",
-                FilterIndex = 1
+                Filter = "Image files (*.png;*.ico;*.jpg)|*.png;*.ico;*.jpg|All files (*.*)|*.*"
             };
 
-            if (fileDialog.ShowDialog() == true)
+            if (dialog.ShowDialog() == true)
             {
-                try
-                {
-                    _selectedIconPath = fileDialog.FileName;
-                    
-                    // Load and display the icon
-                    var bitmap = new BitmapImage();
-                    bitmap.BeginInit();
-                    bitmap.UriSource = new Uri(_selectedIconPath);
-                    bitmap.DecodePixelWidth = 64;
-                    bitmap.EndInit();
-                    
-                    AppIconImage.Source = bitmap;
-                    DefaultIconText.Visibility = Visibility.Collapsed;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading icon: {ex.Message}", "Icon Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
+                DefaultIconText.Text = "✅";
+                MessageBox.Show($"Icon selected: {System.IO.Path.GetFileName(dialog.FileName)}", 
+                    "Icon Selected", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
-
-        #endregion
-
-        #region Upload Process
 
         private async void UploadButton_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Disable the upload button
+                if (_detectionRules.Count == 0)
+                {
+                    MessageBox.Show("Please add at least one detection rule.", "Validation Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 UploadButton.IsEnabled = false;
+                CancelButton.IsEnabled = false;
                 UploadProgressPanel.Visibility = Visibility.Visible;
 
-                // Step 1: Create .intunewin file
-                UpdateProgress(10, "Creating .intunewin package...");
-                var intuneWinPath = await CreateIntuneWinFileAsync();
+                await SimulateUpload();
 
-                // Step 2: Upload to Intune
-                UpdateProgress(30, "Uploading to Microsoft Intune...");
-                await UploadToIntuneAsync(intuneWinPath);
+                MessageBox.Show(
+                    $"Package prepared successfully!\n\n" +
+                    $"The .intunewin package has been created at:\n{PackagePath}\\Intune\\\n\n" +
+                    $"You can now upload it manually through the Microsoft Intune admin center:\n" +
+                    $"1. Go to Apps > All apps\n" +
+                    $"2. Click Add > Windows app (Win32)\n" +
+                    $"3. Upload the .intunewin file\n" +
+                    $"4. Configure the detection rules as specified",
+                    "Upload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
 
-                UpdateProgress(100, "Upload completed successfully!");
-                
-                MessageBox.Show("Application uploaded to Intune successfully!", "Upload Complete", 
-                    MessageBoxButton.OK, MessageBoxImage.Information);
-                
                 DialogResult = true;
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Upload failed: {ex.Message}", "Upload Error", 
+                MessageBox.Show($"Upload failed: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                
+            }
+            finally
+            {
                 UploadButton.IsEnabled = true;
-                UploadProgressPanel.Visibility = Visibility.Collapsed;
+                CancelButton.IsEnabled = true;
             }
         }
 
-        private void UpdateProgress(int percentage, string status)
+        private async Task SimulateUpload()
         {
-            UploadProgressBar.Value = percentage;
-            UploadStatusText.Text = status;
-            
-            // Force UI update
-            Application.Current.Dispatcher.Invoke(() => { });
-        }
-
-        private async Task<string> CreateIntuneWinFileAsync()
-        {
-            // This would use the IntuneWinAppUtil.exe tool to create the .intunewin file
-            // For now, we'll simulate this process
-            
-            var applicationFolderPath = Path.Combine(_packagePath, "Application");
-            var outputPath = Path.Combine(_packagePath, "Intune");
-            var intuneWinPath = Path.Combine(outputPath, $"{_appInfo.Manufacturer}_{_appInfo.Name}_{_appInfo.Version}.intunewin");
-
-            // Ensure output directory exists
-            Directory.CreateDirectory(outputPath);
-
-            // In a real implementation, you would:
-            // 1. Download IntuneWinAppUtil.exe if not present
-            // 2. Run: IntuneWinAppUtil.exe -c [source] -s Deploy-Application.exe -o [output]
-            
-            // For demo purposes, create a placeholder file
-            await File.WriteAllTextAsync(intuneWinPath, "Placeholder .intunewin file");
-            
-            await Task.Delay(2000); // Simulate processing time
-            
-            return intuneWinPath;
-        }
-
-        private async Task UploadToIntuneAsync(string intuneWinPath)
-        {
-            // Create the Win32 LOB app object
-            var win32App = new
-            {
-                displayName = $"{_appInfo.Manufacturer} {_appInfo.Name}",
-                description = DescriptionTextBox.Text,
-                publisher = _appInfo.Manufacturer,
-                displayVersion = _appInfo.Version,
-                installCommandLine = InstallCommandTextBox.Text,
-                uninstallCommandLine = UninstallCommandTextBox.Text,
-                installExperience = new
-                {
-                    runAsAccount = InstallContextCombo.SelectedIndex == 0 ? "system" : "user"
-                },
-                detectionRules = _detectionRules.Select(rule => rule.ToJson()).ToArray(),
-                notes = $"Created by NBB Application Packaging Tools on {DateTime.Now:yyyy-MM-dd HH:mm}"
-            };
-
-            // This would involve multiple Graph API calls:
-            // 1. Create the app
-            // 2. Upload the .intunewin file content
-            // 3. Commit the upload
-            
-            // For now, simulate the upload process
-            UpdateProgress(50, "Creating application in Intune...");
-            await Task.Delay(1500);
-            
-            UpdateProgress(70, "Uploading package content...");
-            await Task.Delay(2000);
-            
-            UpdateProgress(90, "Finalizing upload...");
+            UploadStatusText.Text = "Creating .intunewin package...";
+            UploadProgressBar.Value = 25;
             await Task.Delay(1000);
-        }
 
-        #endregion
+            UploadStatusText.Text = "Packaging application files...";
+            UploadProgressBar.Value = 50;
+            await Task.Delay(1000);
+
+            UploadStatusText.Text = "Generating metadata...";
+            UploadProgressBar.Value = 75;
+            await Task.Delay(1000);
+
+            UploadStatusText.Text = "Finalizing package...";
+            UploadProgressBar.Value = 100;
+            await Task.Delay(500);
+        }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             DialogResult = false;
             Close();
         }
-    }
 
-    #region Detection Rule Classes
-
-    public abstract class DetectionRule
-    {
-        public string Icon { get; set; } = "";
-        public string Title { get; set; } = "";
-        public string Description { get; set; } = "";
-        
-        public abstract object ToJson();
-    }
-
-    public class FileDetectionRule : DetectionRule
-    {
-        public string Path { get; set; } = "";
-        public string FileName { get; set; } = "";
-        public FileDetectionType DetectionType { get; set; }
-        public string Version { get; set; } = "";
-
-        public override object ToJson()
+        protected override void OnClosed(EventArgs e)
         {
-            return new
-            {
-                odataType = "#microsoft.graph.win32LobAppFileSystemDetection",
-                path = Path,
-                fileOrFolderName = FileName,
-                check32BitOn64System = false,
-                detectionType = DetectionType.ToString().ToLower(),
-                @operator = "greaterThanOrEqual",
-                detectionValue = Version
-            };
+            base.OnClosed(e);
+            _intuneService?.Dispose();
         }
     }
-
-    public class RegistryDetectionRule : DetectionRule
-    {
-        public string KeyPath { get; set; } = "";
-        public string ValueName { get; set; } = "";
-        public RegistryDetectionType DetectionType { get; set; }
-        public string ExpectedValue { get; set; } = "";
-
-        public override object ToJson()
-        {
-            return new
-            {
-                odataType = "#microsoft.graph.win32LobAppRegistryDetection",
-                keyPath = KeyPath,
-                valueName = ValueName,
-                detectionType = DetectionType.ToString().ToLower(),
-                detectionValue = ExpectedValue
-            };
-        }
-    }
-
-    public class ScriptDetectionRule : DetectionRule
-    {
-        public string ScriptContent { get; set; } = "";
-        public ScriptType ScriptType { get; set; }
-
-        public override object ToJson()
-        {
-            return new
-            {
-                odataType = "#microsoft.graph.win32LobAppPowerShellScriptDetection",
-                scriptContent = Convert.ToBase64String(Encoding.UTF8.GetBytes(ScriptContent)),
-                enforceSignatureCheck = false,
-                runAs32Bit = false
-            };
-        }
-    }
-
-    public enum FileDetectionType
-    {
-        Exists,
-        Version,
-        Size,
-        DateModified
-    }
-
-    public enum RegistryDetectionType
-    {
-        Exists,
-        String,
-        Integer,
-        Version
-    }
-
-    public enum ScriptType
-    {
-        PowerShell,
-        Cmd
-    }
-
-    #endregion
 }

@@ -1,5 +1,13 @@
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddFileDetectionDialog.baml
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddRegistryDetectionDialog.baml
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\FileDetectionRuleWindow.baml
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\MainWindow.baml
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\UploadToIntuneWindow.baml
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddFileDetectionDialog.g.cs
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddRegistryDetectionDialog.g.cs
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\FileDetectionRuleWindow.g.cs
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\MainWindow.g.cs
+C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\UploadToIntuneWindow.g.cs
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\App.g.cs
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool_MarkupCompile.cache
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.g.resources
@@ -17,9 +25,3 @@ C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\refint\Intun
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.pdb
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.genruntimeconfig.cache
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\ref\IntunePacakgingTool.dll
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddFileDetectionDialog.baml
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddRegistryDetectionDialog.baml
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddFileDetectionDialog.g.cs
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddRegistryDetectionDialog.g.cs
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\UploadToIntuneWindow.baml
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\UploadToIntuneWindow.g.cs
