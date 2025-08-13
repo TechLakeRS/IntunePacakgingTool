@@ -1,0 +1,281 @@
+﻿<Window x:Class="IntunePackagingTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NBB Application Packaging Tools" 
+        Height="800" Width="1400"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F7FA">
+    
+    <Window.Resources>
+        <!-- Navigation Button Style -->
+        <Style TargetType="Button" x:Key="NavButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#495057"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Active Navigation Button Style -->
+        <Style TargetType="Button" x:Key="ActiveNavButton">
+            <Setter Property="Background" Value="#007BFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,15"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Modern Button Style -->
+        <Style TargetType="Button" x:Key="ModernButton">
+            <Setter Property="Background" Value="#007BFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style TargetType="Button" x:Key="SecondaryButton" BasedOn="{StaticResource ModernButton}">
+            <Setter Property="Background" Value="#6C757D"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style TargetType="TextBox" x:Key="ModernTextBox">
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="BorderBrush" Value="#CED4DA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style TargetType="ComboBox" x:Key="ModernComboBox">
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#CED4DA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="White" Padding="25,20" BorderBrush="#DEE2E6" BorderThickness="0,0,0,1">
+            <StackPanel>
+                <TextBlock Text="NBB Application Packaging Tools" FontSize="24" FontWeight="SemiBold" Foreground="#212529"/>
+                <TextBlock Text="Streamline your PSADT package creation process" FontSize="13" Foreground="#6C757D" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Navigation Bar -->
+        <Border Grid.Row="1" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal">
+                <Button Name="ViewAppsNavButton" Content="📱 View Applications" Style="{StaticResource ActiveNavButton}" Click="ViewAppsNavButton_Click"/>
+                <Button Name="CreateAppNavButton" Content="➕ Create Application" Style="{StaticResource NavButton}" Click="CreateAppNavButton_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="2" Name="MainContentGrid" Margin="20">
+            
+            <!-- VIEW APPLICATIONS PAGE -->
+            <Grid Name="ViewApplicationsPage" Visibility="Visible">
+                <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="8" Padding="20">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Grid.Row="0" Text="📱 Intune Win32 Applications" FontSize="20" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,20"/>
+
+                        <!-- Filter Bar -->
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,20">
+                            <TextBlock Text="Category:" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Medium" Foreground="#6C757D"/>
+                            <ComboBox Name="CategoryFilter" Width="200" Style="{StaticResource ModernComboBox}" SelectedIndex="0" SelectionChanged="CategoryFilter_SelectionChanged">
+                                <!-- Categories will be populated dynamically -->
+                            </ComboBox>
+                            <Button Content="🔄 Refresh" Name="RefreshButton" Click="RefreshButton_Click" Style="{StaticResource SecondaryButton}" Margin="10,0,0,0"/>
+                            <Button Name="DebugTestButton" Content="🔍 Debug Test" Click="DebugTest_Click" Style="{StaticResource SecondaryButton}" Margin="10,0,0,0"/>
+                        </StackPanel>
+
+                        <!-- List Header -->
+                        <Border Grid.Row="2" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="6,6,0,0" Padding="15,10" Margin="0,0,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="120"/>
+                                    <ColumnDefinition Width="150"/>
+                                    <ColumnDefinition Width="20"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Grid.Column="0" Text="Application Name" FontSize="12" FontWeight="SemiBold" Foreground="#495057"/>
+                                <TextBlock Grid.Column="1" Text="Version" FontSize="12" FontWeight="SemiBold" Foreground="#495057" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Text="Category" FontSize="12" FontWeight="SemiBold" Foreground="#495057" HorizontalAlignment="Center"/>
+                                <TextBlock Grid.Column="3" Text="●" FontSize="12" FontWeight="SemiBold" Foreground="#495057" HorizontalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Applications List -->
+                        <ListView Grid.Row="3" Name="ApplicationsList" BorderThickness="0" Background="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListView.ItemContainerStyle>
+                                <Style TargetType="ListViewItem">
+                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                    <Setter Property="Padding" Value="0"/>
+                                    <Setter Property="Margin" Value="0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                </Style>
+                            </ListView.ItemContainerStyle>
+                            
+                            <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="White" BorderBrush="#DEE2E6" BorderThickness="1,0,1,1" Padding="15,12" Margin="0">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="120"/>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="20"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <!-- Application Name Column -->
+                                            <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding DisplayName}" FontSize="13" FontWeight="SemiBold" Foreground="#212529" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding Id}" FontSize="10" Foreground="#6C757D" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+                                            </StackPanel>
+                                            
+                                            <!-- Version Column -->
+                                            <TextBlock Grid.Column="1" Text="{Binding Version}" FontSize="12" Foreground="#495057" VerticalAlignment="Center" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            
+                                            <!-- Category Column -->
+                                            <TextBlock Grid.Column="2" Text="{Binding Category}" FontSize="12" Foreground="#495057" VerticalAlignment="Center" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                            
+                                            <!-- Status Indicator -->
+                                            <Border Grid.Column="3" Background="#28A745" Width="8" Height="8" CornerRadius="4" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- CREATE APPLICATION PAGE -->
+            <Grid Name="CreateApplicationPage" Visibility="Collapsed">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="300"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Main Form -->
+                <Border Grid.Column="0" Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="8" Padding="25" Margin="0,0,15,0">
+                    <StackPanel>
+                        <TextBlock Text="➕ Create New Application Package" FontSize="20" FontWeight="SemiBold" Foreground="#212529" Margin="0,0,0,30"/>
+                        
+                        <!-- Basic Information -->
+                        <TextBlock Text="Application Information" FontSize="16" FontWeight="Medium" Foreground="#495057" Margin="0,0,0,15"/>
+                        
+                        <Grid Margin="0,0,0,30">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="150"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Manufacturer:" VerticalAlignment="Center" FontSize="13" FontWeight="Medium" Foreground="#6C757D"/>
+                            <TextBox Grid.Row="0" Grid.Column="1" Name="ManufacturerTextBox" Style="{StaticResource ModernTextBox}"/>
+
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Application Name:" VerticalAlignment="Center" FontSize="13" FontWeight="Medium" Foreground="#6C757D"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Name="AppNameTextBox" Style="{StaticResource ModernTextBox}"/>
+
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Version:" VerticalAlignment="Center" FontSize="13" FontWeight="Medium" Foreground="#6C757D"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Name="VersionTextBox" Style="{StaticResource ModernTextBox}"/>
+
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Sources Path:" VerticalAlignment="Top" Margin="0,12,0,0" FontSize="13" FontWeight="Medium" Foreground="#6C757D"/>
+                            <StackPanel Grid.Row="3" Grid.Column="1">
+                                <TextBox Name="SourcesPathTextBox" Style="{StaticResource ModernTextBox}"/>
+                                <Button Content="📁 Browse Files..." Name="BrowseSourcesButton" Click="BrowseSourcesButton_Click" Style="{StaticResource SecondaryButton}" HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Package Status -->
+                        <Border Name="PackageStatusPanel" Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,20" Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="📦 Package Status" FontSize="14" FontWeight="Medium" Foreground="#495057" Margin="0,0,0,10"/>
+                                <TextBlock Name="PackageStatusText" Text="Package not created yet" FontSize="12" Foreground="#6C757D"/>
+                                <TextBlock Name="PackagePathText" Text="" FontSize="11" Foreground="#6C757D" Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                    </StackPanel>
+                </Border>
+
+                <!-- Action Panel -->
+                <Border Grid.Column="1" Background="White" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="8" Padding="20" VerticalAlignment="Top">
+                    <StackPanel>
+                        <TextBlock Text="🎯 Actions" FontSize="16" FontWeight="Medium" Foreground="#212529" Margin="0,0,0,20"/>
+                        
+                        <!-- Step 1: Generate Package -->
+                        <Border Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="1️⃣ Generate Package" FontSize="13" FontWeight="Medium" Foreground="#495057" Margin="0,0,0,10"/>
+                                <Button Content="🚀 Generate Package" Name="GenerateButton" Click="GenerateButton_Click" Style="{StaticResource ModernButton}" Background="#28A745" Padding="15,12"/>
+                                <TextBlock Text="Creates PSADT folder structure and script template" FontSize="10" Foreground="#6C757D" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Step 2: Edit Script -->
+                        <Border Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="6" Padding="15" Margin="0,0,0,15">
+                            <StackPanel>
+                                <TextBlock Text="2️⃣ Edit Script (Optional)" FontSize="13" FontWeight="Medium" Foreground="#495057" Margin="0,0,0,10"/>
+                                <Button Content="📝 Open Script Editor" Name="OpenScriptButton" Click="OpenScriptButton_Click" Style="{StaticResource SecondaryButton}"/>
+                                <TextBlock Text="Customize Deploy-Application.ps1 in PowerShell ISE" FontSize="10" Foreground="#6C757D" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!-- Step 3: Upload to Intune -->
+                        <Border Background="#F8F9FA" BorderBrush="#DEE2E6" BorderThickness="1" CornerRadius="6" Padding="15">
+                            <StackPanel>
+                                <TextBlock Text="3️⃣ Upload to Intune" FontSize="13" FontWeight="Medium" Foreground="#495057" Margin="0,0,0,10"/>
+                                <Button Content="☁️ Upload to Intune" Name="UploadButton" Click="UploadButton_Click" Style="{StaticResource ModernButton}" Background="#007BFF"/>
+                                <TextBlock Text="Create .intunewin and upload to Microsoft Intune" FontSize="10" Foreground="#6C757D" Margin="0,5,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+        </Grid>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="3" Background="White" Padding="20,12" BorderBrush="#DEE2E6" BorderThickness="0,1,0,0">
+            <Grid>
+                <TextBlock Name="StatusText" Text="Ready" FontSize="12" Foreground="#6C757D" VerticalAlignment="Center"/>
+                <ProgressBar Name="ProgressBar" Width="200" Height="4" Visibility="Collapsed" Background="#E9ECEF" Foreground="#007BFF" BorderThickness="0" HorizontalAlignment="Right"/>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
