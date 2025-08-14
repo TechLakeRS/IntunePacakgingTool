@@ -1,3 +1,8 @@
+C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.exe
+C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.deps.json
+C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.runtimeconfig.json
+C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.dll
+C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.pdb
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddFileDetectionDialog.baml
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\AddRegistryDetectionDialog.baml
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\FileDetectionRuleWindow.baml
@@ -15,11 +20,6 @@ C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakg
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.AssemblyInfoInputs.cache
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.AssemblyInfo.cs
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.csproj.CoreCompileInputs.cache
-C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.exe
-C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.deps.json
-C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.runtimeconfig.json
-C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.dll
-C:\Users\admin.sarkerr\IntunePacakgingTool\bin\Debug\net9.0-windows\IntunePacakgingTool.pdb
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.dll
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\refint\IntunePacakgingTool.dll
 C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\IntunePacakgingTool.pdb

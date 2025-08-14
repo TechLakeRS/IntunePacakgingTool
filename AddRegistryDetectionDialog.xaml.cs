@@ -11,85 +11,94 @@ namespace IntunePackagingTool
         public AddRegistryDetectionDialog()
         {
             InitializeComponent();
-            UpdatePreview();
         }
 
-        private void DetectionTypeCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void DetectionMethodCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ExpectedValueLabel == null || ExpectedValuePanel == null) return;
+            if (ValueComparisonPanel == null) return;
 
-            var selectedItem = (ComboBoxItem)DetectionTypeCombo.SelectedItem;
+            var selectedItem = (ComboBoxItem)DetectionMethodCombo.SelectedItem;
             var content = selectedItem?.Content?.ToString() ?? "";
 
-            if (content == "Key or value exists")
+            // Show value comparison panel for comparison methods
+            if (content == "String comparison" || content == "Integer comparison" || content == "Version comparison")
             {
-                ExpectedValueLabel.Visibility = Visibility.Collapsed;
-                ExpectedValuePanel.Visibility = Visibility.Collapsed;
+                ValueComparisonPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                ExpectedValueLabel.Visibility = Visibility.Visible;
-                ExpectedValuePanel.Visibility = Visibility.Visible;
-            }
-
-            UpdatePreview();
-        }
-
-        private void UpdatePreview()
-        {
-            if (PreviewTextBlock == null) return;
-
-            var rootKey = ((ComboBoxItem)RootKeyCombo?.SelectedItem)?.Content?.ToString() ?? "HKEY_LOCAL_MACHINE";
-            var keyPath = KeyPathTextBox?.Text ?? "";
-            var valueName = ValueNameTextBox?.Text ?? "";
-            var fullPath = $"{rootKey}\\{keyPath}\\{valueName}";
-
-            var selectedType = (ComboBoxItem)DetectionTypeCombo?.SelectedItem;
-            var typeContent = selectedType?.Content?.ToString() ?? "Key or value exists";
-
-            if (typeContent == "Key or value exists")
-            {
-                PreviewTextBlock.Text = $"Registry key exists: {fullPath}";
-            }
-            else
-            {
-                var operatorItem = (ComboBoxItem)OperatorCombo?.SelectedItem;
-                var operatorText = operatorItem?.Content?.ToString() ?? "Equal to";
-                var expectedValue = ExpectedValueTextBox?.Text ?? "";
-                
-                PreviewTextBlock.Text = $"Registry value: {fullPath}\n{typeContent} {operatorText.ToLower()} {expectedValue}";
+                ValueComparisonPanel.Visibility = Visibility.Collapsed;
             }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(KeyPathTextBox.Text))
+            if (string.IsNullOrWhiteSpace(KeyPathCombo.Text))
             {
                 MessageBox.Show("Please enter a registry key path.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            var selectedMethod = ((ComboBoxItem)DetectionMethodCombo.SelectedItem)?.Content?.ToString() ?? "";
+            
+            // Validate value name for certain detection methods
+            if ((selectedMethod == "Value exists" || selectedMethod == "String comparison" || 
+                 selectedMethod == "Integer comparison" || selectedMethod == "Version comparison") &&
+                string.IsNullOrWhiteSpace(ValueNameTextBox.Text))
+            {
+                MessageBox.Show("Please enter a value name for this detection method.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Validate comparison value for comparison methods
+            if ((selectedMethod == "String comparison" || selectedMethod == "Integer comparison" || selectedMethod == "Version comparison") &&
+                string.IsNullOrWhiteSpace(ComparisonValueTextBox.Text))
+            {
+                MessageBox.Show("Please enter a comparison value.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             DetectionRule = new DetectionRule
             {
                 Type = DetectionRuleType.Registry,
-                RegistryHive = ((ComboBoxItem)RootKeyCombo.SelectedItem)?.Content?.ToString() ?? "HKEY_LOCAL_MACHINE",
-                RegistryKey = KeyPathTextBox.Text.Trim(),
+                RegistryKey = KeyPathCombo.Text.Trim(),
                 RegistryValueName = ValueNameTextBox.Text.Trim()
             };
 
-            var selectedType = (ComboBoxItem)DetectionTypeCombo.SelectedItem;
-            var typeContent = selectedType?.Content?.ToString() ?? "";
-
-            if (typeContent != "Key or value exists")
+            // Set detection method specific properties
+            switch (selectedMethod)
             {
-                DetectionRule.ExpectedValue = ExpectedValueTextBox.Text.Trim();
-                
-                var operatorItem = (ComboBoxItem)OperatorCombo.SelectedItem;
-                DetectionRule.Operator = operatorItem?.Tag?.ToString() ?? "equal";
+                case "Key exists":
+                    // No additional properties needed
+                    break;
+                case "Value exists":
+                    // No additional properties needed
+                    break;
+                case "String comparison":
+                case "Integer comparison":
+                case "Version comparison":
+                    DetectionRule.ExpectedValue = ComparisonValueTextBox.Text.Trim();
+                    var operatorItem = (ComboBoxItem)ComparisonOperatorCombo.SelectedItem;
+                    DetectionRule.Operator = ConvertOperatorToIntune(operatorItem?.Content?.ToString() ?? "Equals");
+                    break;
             }
 
             DialogResult = true;
             Close();
+        }
+
+        private string ConvertOperatorToIntune(string displayOperator)
+        {
+            return displayOperator switch
+            {
+                "Equals" => "equal",
+                "Not equals" => "notEqual",
+                "Greater than" => "greaterThan",
+                "Greater than or equal" => "greaterThanOrEqual",
+                "Less than" => "lessThan",
+                "Less than or equal" => "lessThanOrEqual",
+                _ => "equal"
+            };
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)

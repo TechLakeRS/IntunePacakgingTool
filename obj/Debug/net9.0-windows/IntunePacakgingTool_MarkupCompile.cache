@@ -4,15 +4,15 @@
 winexe
 C#
 .cs
-C:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\
+c:\Users\admin.sarkerr\IntunePacakgingTool\obj\Debug\net9.0-windows\
 IntunePacakgingTool
 none
 false
 TRACE;DEBUG;NET;NET9_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
-C:\Users\admin.sarkerr\IntunePacakgingTool\App.xaml
+c:\Users\admin.sarkerr\IntunePacakgingTool\App.xaml
 5-1431955719
 
-12-195193822
+13-1241648002
 200-44685031
 AddFileDetectionDialog.xaml;AddRegistryDetectionDialog.xaml;FileDetectionRuleWindow.xaml;MainWindow.xaml;UploadToIntuneWindow.xaml;
 

@@ -1,23 +1,39 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Diagnostics;  
+using System.IO;           
+using System.Linq;         
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using Microsoft.Win32;
 
 namespace IntunePackagingTool
 {
-    public partial class UploadToIntuneWindow : Window
+    public partial class UploadToIntuneWindow : Window, IUploadProgress
     {
         public ApplicationInfo? ApplicationInfo { get; set; }
         public string PackagePath { get; set; } = "";
         
         private ObservableCollection<DetectionRule> _detectionRules = new ObservableCollection<DetectionRule>();
         private IntuneService _intuneService = new IntuneService();
+        private IntuneUploadService _uploadService;
 
         public UploadToIntuneWindow()
         {
             InitializeComponent();
             DetectionRulesList.ItemsSource = _detectionRules;
+            _uploadService = new IntuneUploadService(_intuneService);
+        }
+
+        // Implement IUploadProgress interface
+        public void UpdateProgress(int percentage, string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                UploadProgressBar.Value = percentage;
+                UploadStatusText.Text = message;
+            });
         }
 
         protected override void OnContentRendered(EventArgs e)
@@ -88,6 +104,23 @@ namespace IntunePackagingTool
             }
         }
 
+        private void RemoveDetectionRule_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button button && button.Tag is DetectionRule ruleToRemove)
+            {
+                var result = MessageBox.Show(
+                    $"Are you sure you want to remove this detection rule?\n\n{ruleToRemove.Title}", 
+                    "Remove Detection Rule", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question);
+                    
+                if (result == MessageBoxResult.Yes)
+                {
+                    _detectionRules.Remove(ruleToRemove);
+                }
+            }
+        }
+
         private async void UploadButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -99,54 +132,73 @@ namespace IntunePackagingTool
                     return;
                 }
 
+                if (string.IsNullOrEmpty(PackagePath) || ApplicationInfo == null)
+                {
+                    MessageBox.Show("Package information is not available.", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
                 UploadButton.IsEnabled = false;
                 CancelButton.IsEnabled = false;
                 UploadProgressPanel.Visibility = Visibility.Visible;
 
-                await SimulateUpload();
+                // Get form values INCLUDING install context
+                var installCommand = InstallCommandTextBox.Text.Trim();
+                var uninstallCommand = UninstallCommandTextBox.Text.Trim();
+                var description = DescriptionTextBox.Text.Trim();
+                
+                // Read the install context from the UI
+                var selectedInstallContext = ((ComboBoxItem)InstallContextCombo.SelectedItem)?.Content?.ToString() ?? "System";
+                var installContext = selectedInstallContext.ToLower(); // "system" or "user"
+
+                // Use the upload service with install context
+                var appId = await _uploadService.UploadWin32ApplicationAsync(
+                    ApplicationInfo, 
+                    PackagePath, 
+                    _detectionRules.ToList(), 
+                    installCommand, 
+                    uninstallCommand, 
+                    description,
+                    installContext,  // Pass the actual UI selection
+                    this);
+
+                var intuneFolder = System.IO.Path.Combine(PackagePath, "Intune");
+                var intuneWinFiles = System.IO.Directory.GetFiles(intuneFolder, "*.intunewin");
+                var intuneWinFile = intuneWinFiles.Length > 0 ? intuneWinFiles[0] : "";
 
                 MessageBox.Show(
-                    $"Package prepared successfully!\n\n" +
-                    $"The .intunewin package has been created at:\n{PackagePath}\\Intune\\\n\n" +
-                    $"You can now upload it manually through the Microsoft Intune admin center:\n" +
-                    $"1. Go to Apps > All apps\n" +
-                    $"2. Click Add > Windows app (Win32)\n" +
-                    $"3. Upload the .intunewin file\n" +
-                    $"4. Configure the detection rules as specified",
-                    "Upload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                    $"🎉 Application successfully uploaded to Microsoft Intune!\n\n" +
+                    $"Application: {ApplicationInfo.Manufacturer} {ApplicationInfo.Name} v{ApplicationInfo.Version}\n" +
+                    $"Intune App ID: {appId}\n\n" +
+                    $"Package Details:\n" +
+                    $"• Install Context: {selectedInstallContext}\n" +
+                    $"• Install Command: {installCommand}\n" +
+                    $"• Uninstall Command: {uninstallCommand}\n" +
+                    $"• Detection Rules: {_detectionRules.Count} configured\n\n" +
+                    $"The application is now available in the Microsoft Intune admin center.\n" +
+                    $"Local .intunewin file: {System.IO.Path.GetFileName(intuneWinFile)}",
+                    "Upload Successful!", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 DialogResult = true;
                 Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Upload failed: {ex.Message}", "Error", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                UploadProgressPanel.Visibility = Visibility.Collapsed;
+                MessageBox.Show(
+                    $"Upload failed: {ex.Message}\n\n" +
+                    $"The .intunewin file may have been created locally, but the upload to Intune failed.\n" +
+                    $"You can upload it manually through the Intune admin center.", 
+                    "Upload Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                
+                Debug.WriteLine($"Upload error: {ex}");
             }
             finally
             {
                 UploadButton.IsEnabled = true;
                 CancelButton.IsEnabled = true;
             }
-        }
-
-        private async Task SimulateUpload()
-        {
-            UploadStatusText.Text = "Creating .intunewin package...";
-            UploadProgressBar.Value = 25;
-            await Task.Delay(1000);
-
-            UploadStatusText.Text = "Packaging application files...";
-            UploadProgressBar.Value = 50;
-            await Task.Delay(1000);
-
-            UploadStatusText.Text = "Generating metadata...";
-            UploadProgressBar.Value = 75;
-            await Task.Delay(1000);
-
-            UploadStatusText.Text = "Finalizing package...";
-            UploadProgressBar.Value = 100;
-            await Task.Delay(500);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -159,6 +211,7 @@ namespace IntunePackagingTool
         {
             base.OnClosed(e);
             _intuneService?.Dispose();
+            _uploadService?.Dispose();
         }
     }
 }

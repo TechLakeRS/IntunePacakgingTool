@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj": {}
+    "c:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj": {}
   },
   "projects": {
-    "C:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj": {
+    "c:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj",
+        "projectUniqueName": "c:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj",
         "projectName": "IntunePacakgingTool",
-        "projectPath": "C:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj",
+        "projectPath": "c:\\Users\\admin.sarkerr\\IntunePacakgingTool\\IntunePacakgingTool.csproj",
         "packagesPath": "C:\\Users\\admin.sarkerr\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\admin.sarkerr\\IntunePacakgingTool\\obj\\",
+        "outputPath": "c:\\Users\\admin.sarkerr\\IntunePacakgingTool\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\admin.sarkerr\\AppData\\Roaming\\NuGet\\NuGet.Config"

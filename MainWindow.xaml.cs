@@ -23,47 +23,62 @@ namespace IntunePackagingTool
         {
             InitializeComponent();
             ApplicationsList.ItemsSource = _applications;
-            InitializeCategoryFilter();
             _ = LoadApplicationsAsync();
-        }
-
-        private void InitializeCategoryFilter()
-        {
-            CategoryFilter.Items.Clear();
-            CategoryFilter.Items.Add("All Categories");
-            CategoryFilter.Items.Add("Business");
-            CategoryFilter.Items.Add("Productivity");
-            CategoryFilter.Items.Add("Developer Tools");
-            CategoryFilter.Items.Add("Utilities");
-            CategoryFilter.Items.Add("Security");
-            CategoryFilter.SelectedIndex = 0;
         }
 
         private async Task LoadApplicationsAsync()
         {
             try
             {
-                ShowStatus("Loading applications from Intune...");
-                ShowProgress(true);
+            ShowStatus("Loading applications from Intune...");
+            ShowProgress(true);
 
-                var apps = await _intuneService.GetApplicationsAsync();
-                
-                _applications.Clear();
-                foreach (var app in apps)
-                {
-                    _applications.Add(app);
-                }
+            var apps = await _intuneService.GetApplicationsAsync();
+        
+            _applications.Clear();
+            foreach (var app in apps)
+            {  
+            _applications.Add(app);
+            }
 
-                ShowStatus($"Loaded {apps.Count} applications");
-                ShowProgress(false);
+            // Populate category filter with actual categories from loaded apps
+            UpdateCategoryFilter();
+
+            ShowStatus($"Loaded {apps.Count} applications");
+            ShowProgress(false);
             }
             catch (Exception ex)
-            {
-                ShowStatus("Failed to load applications");
-                ShowProgress(false);
-                MessageBox.Show($"Error loading applications: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+        {
+        ShowStatus("Failed to load applications");
+        ShowProgress(false);
+        MessageBox.Show($"Error loading applications: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
+
+        private void UpdateCategoryFilter()
+        {
+         var currentSelection = CategoryFilter.SelectedItem?.ToString();
+    
+        CategoryFilter.Items.Clear();
+        CategoryFilter.Items.Add("All Categories");
+    
+        // Get unique categories from loaded applications
+        var categories = _applications
+        .Where(app => !string.IsNullOrWhiteSpace(app.Category))
+        .Select(app => app.Category)
+        .Distinct()
+        .OrderBy(cat => cat);
+    
+        foreach (var category in categories)
+        {
+            CategoryFilter.Items.Add(category);
+        }
+    
+        // Restore selection or default to "All Categories"
+        var itemToSelect = CategoryFilter.Items.Cast<string>().FirstOrDefault(item => item == currentSelection) ?? "All Categories";
+        CategoryFilter.SelectedItem = itemToSelect;
+        FilterApplications();
+     }
 
         private void ViewAppsNavButton_Click(object sender, RoutedEventArgs e)
         {
@@ -85,8 +100,30 @@ namespace IntunePackagingTool
 
         private void CategoryFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Implement filtering logic here if needed
+            FilterApplications();
         }
+        private void FilterApplications()
+    {
+    if (CategoryFilter.SelectedItem == null) return;
+
+    var selectedCategory = CategoryFilter.SelectedItem.ToString();
+    
+    if (selectedCategory == "All Categories")
+        {
+        // Show all applications
+        ApplicationsList.ItemsSource = _applications;
+        }
+        else
+        {
+        // Filter applications by selected category
+        var filteredApps = _applications.Where(app => 
+            !string.IsNullOrWhiteSpace(app.Category) && 
+            app.Category.Equals(selectedCategory, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+        
+        ApplicationsList.ItemsSource = filteredApps;
+        }
+    }
 
         private async void RefreshButton_Click(object sender, RoutedEventArgs e)
         {

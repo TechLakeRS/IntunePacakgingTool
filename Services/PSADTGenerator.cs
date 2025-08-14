@@ -8,7 +8,7 @@ namespace IntunePackagingTool
     public class PSADTGenerator
     {
         private readonly string _baseOutputPath = @"\\nbb.local\sys\SCCMData\IntuneApplications";
-        private readonly string _templatePath = @"\\nbb.local\sys\SCCMData\SCRIPTS\SCCM\Archive PSADT Applications\20250811\Application";
+        private readonly string _templatePath = @"\\nbb.local\sys\SCCMData\TOOLS\IntunePackagingTool\20250811\Application";
 
         public async Task<string> CreatePackageAsync(ApplicationInfo appInfo)
         {

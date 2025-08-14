@@ -123,7 +123,7 @@
                                                 <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"/>
                                                 <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#6C757D"/>
                                             </StackPanel>
-                                            <Button Grid.Column="2" Content="❌" Background="Transparent" BorderThickness="0" FontSize="12" Cursor="Hand" ToolTip="Remove Rule"/>
+                                            <Button Grid.Column="2" Content="❌" Background="Transparent" BorderThickness="0" FontSize="12" Cursor="Hand" ToolTip="Remove Rule" Click="RemoveDetectionRule_Click" Tag="{Binding}"/>
                                         </Grid>
                                     </Border>
                                 </DataTemplate>
