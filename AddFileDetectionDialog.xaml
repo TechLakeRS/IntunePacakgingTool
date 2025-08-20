@@ -98,18 +98,17 @@
                     <ComboBox Grid.Row="0" Grid.Column="1" Name="DetectionTypeCombo" Style="{StaticResource ModernComboBox}" SelectionChanged="DetectionTypeCombo_SelectionChanged">
                         <ComboBoxItem Content="File or folder exists" IsSelected="True"/>
                         <ComboBoxItem Content="File version"/>
-                        <ComboBoxItem Content="File size (MB)"/>
-                        <ComboBoxItem Content="Date modified"/>
                     </ComboBox>
 
                     <TextBlock Grid.Row="1" Grid.Column="0" Name="ValueLabel" Text="Version:" VerticalAlignment="Center" FontSize="13" FontWeight="Medium" Foreground="#6C757D" Visibility="Collapsed"/>
                     <StackPanel Grid.Row="1" Grid.Column="1" Name="ValuePanel" Orientation="Horizontal" Visibility="Collapsed">
                         <ComboBox Name="OperatorCombo" Style="{StaticResource ModernComboBox}" Width="150">
-                            <ComboBoxItem Content="Greater than or equal to" IsSelected="True"/>
-                            <ComboBoxItem Content="Equal to"/>
-                            <ComboBoxItem Content="Greater than"/>
-                            <ComboBoxItem Content="Less than"/>
-                            <ComboBoxItem Content="Not equal to"/>
+                            <ComboBoxItem Content="Greater than or equal to" IsSelected="True" Tag="greaterThanOrEqual"/>
+                            <ComboBoxItem Content="Equal to" Tag="equal"/>
+                            <ComboBoxItem Content="Greater than" Tag="greaterThan"/>
+                            <ComboBoxItem Content="Less than" Tag="lessThan"/>
+                            <ComboBoxItem Content="Less than or equal to" Tag="lessThanOrEqual"/>
+                            <ComboBoxItem Content="Not equal to" Tag="notEqual"/>
                         </ComboBox>
                         <TextBox Name="ValueTextBox" Style="{StaticResource ModernTextBox}" Width="150"/>
                     </StackPanel>

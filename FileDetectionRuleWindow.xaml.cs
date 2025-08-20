@@ -128,7 +128,7 @@ namespace IntunePackagingTool
                 return false;
             }
 
-            
+            // Validate version if version detection is selected
             if (FileVersionRadio.IsChecked == true)
             {
                 if (string.IsNullOrWhiteSpace(VersionTextBox.Text))
@@ -138,7 +138,7 @@ namespace IntunePackagingTool
                     return false;
                 }
 
-                
+                // Validate version format
                 try
                 {
                     var version = new Version(VersionTextBox.Text);

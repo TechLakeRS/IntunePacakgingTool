@@ -14,6 +14,12 @@ namespace IntunePackagingTool
         {
             InitializeComponent();
             UpdatePreview();
+            
+            // Wire up text change events for real-time preview
+            FilePathTextBox.TextChanged += (s, e) => UpdatePreview();
+            FileNameTextBox.TextChanged += (s, e) => UpdatePreview();
+            ValueTextBox.TextChanged += (s, e) => UpdatePreview();
+            OperatorCombo.SelectionChanged += (s, e) => UpdatePreview();
         }
 
         private void BrowsePathButton_Click(object sender, RoutedEventArgs e)
@@ -33,7 +39,6 @@ namespace IntunePackagingTool
                 if (!string.IsNullOrEmpty(selectedPath))
                 {
                     FilePathTextBox.Text = selectedPath;
-                    UpdatePreview();
                 }
             }
         }
@@ -54,14 +59,7 @@ namespace IntunePackagingTool
             {
                 ValueLabel.Visibility = Visibility.Visible;
                 ValuePanel.Visibility = Visibility.Visible;
-
-                ValueLabel.Text = content switch
-                {
-                    "File version" => "Version:",
-                    "File size (MB)" => "Size (MB):",
-                    "Date modified" => "Date:",
-                    _ => "Value:"
-                };
+                ValueLabel.Text = "Version:";
             }
 
             UpdatePreview();
@@ -85,15 +83,16 @@ namespace IntunePackagingTool
             else
             {
                 var operatorItem = (ComboBoxItem)OperatorCombo?.SelectedItem;
-                var operatorText = operatorItem?.Content?.ToString() ?? "Equal to";
+                var operatorText = operatorItem?.Content?.ToString() ?? "greater than or equal to";
                 var value = ValueTextBox?.Text ?? "";
                 
-                PreviewTextBlock.Text = $"Check if file exists: {fullPath}\nAND {typeContent.ToLower()} is {operatorText.ToLower()} {value}";
+                PreviewTextBlock.Text = $"Check if file exists: {fullPath}\nAND file version is {operatorText.ToLower()} {value}";
             }
         }
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
+            // Validation
             if (string.IsNullOrWhiteSpace(FilePathTextBox.Text))
             {
                 MessageBox.Show("Please enter a file path.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -106,6 +105,17 @@ namespace IntunePackagingTool
                 return;
             }
 
+            var selectedType = (ComboBoxItem)DetectionTypeCombo.SelectedItem;
+            var typeContent = selectedType?.Content?.ToString() ?? "";
+
+            // Validate version value if version detection is selected
+            if (typeContent == "File version" && string.IsNullOrWhiteSpace(ValueTextBox.Text))
+            {
+                MessageBox.Show("Please enter a version number for file version detection.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // Create the detection rule
             DetectionRule = new DetectionRule
             {
                 Type = DetectionRuleType.File,
@@ -113,16 +123,17 @@ namespace IntunePackagingTool
                 FileOrFolderName = FileNameTextBox.Text.Trim()
             };
 
-            var selectedType = (ComboBoxItem)DetectionTypeCombo.SelectedItem;
-            var typeContent = selectedType?.Content?.ToString() ?? "";
-
-            if (typeContent != "File or folder exists")
+            // Set version-specific properties
+            if (typeContent == "File version")
             {
-                DetectionRule.CheckVersion = typeContent == "File version";
+                DetectionRule.CheckVersion = true;
                 DetectionRule.DetectionValue = ValueTextBox.Text.Trim();
-                
                 var operatorItem = (ComboBoxItem)OperatorCombo.SelectedItem;
-                DetectionRule.Operator = operatorItem?.Tag?.ToString() ?? "equal";
+                DetectionRule.Operator = operatorItem?.Tag?.ToString() ?? "greaterThanOrEqual";
+            }
+            else
+            {
+                DetectionRule.CheckVersion = false;
             }
 
             DialogResult = true;

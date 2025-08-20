@@ -131,10 +131,18 @@ namespace IntunePackagingTool
                         MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
+                
+                System.Diagnostics.Debug.WriteLine("=== UI DETECTION RULES ===");
+                System.Diagnostics.Debug.WriteLine($"Total rules from UI: {_detectionRules.Count}");
+                foreach (var rule in _detectionRules)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Rule: Type={rule.Type}, Path='{rule.Path}', File='{rule.FileOrFolderName}', CheckVersion={rule.CheckVersion}");
+                }
+                System.Diagnostics.Debug.WriteLine("=== END UI DETECTION RULES ===");
 
                 if (string.IsNullOrEmpty(PackagePath) || ApplicationInfo == null)
                 {
-                    MessageBox.Show("Package information is not available.", "Error", 
+                    MessageBox.Show("Package information is not available.", "Error",
                         MessageBoxButton.OK, MessageBoxImage.Error);
                     return;
                 }

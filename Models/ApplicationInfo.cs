@@ -19,4 +19,29 @@ namespace IntunePackagingTool
         public string SourcesPath { get; set; } = "";
         public string ServiceNowSRI { get; set; } = "";
     }
+  public class IntuneWinInfo
+    {
+        public string FileName { get; set; } = "";
+        public long UnencryptedContentSize { get; set; }
+        public string EncryptedFilePath { get; set; } = "";
+        public string TempDirectory { get; set; } = "";
+        public EncryptionInfo EncryptionInfo { get; set; } = new();
+    }
+
+    public class EncryptionInfo
+    {
+        public string EncryptionKey { get; set; } = "";
+        public string MacKey { get; set; } = "";
+        public string InitializationVector { get; set; } = "";
+        public string Mac { get; set; } = "";
+        public string ProfileIdentifier { get; set; } = "";
+        public string FileDigest { get; set; } = "";
+        public string FileDigestAlgorithm { get; set; } = "";
+    }
+
+    public class AzureStorageInfo
+    {
+        public string SasUri { get; set; } = "";
+    }
+    
 }

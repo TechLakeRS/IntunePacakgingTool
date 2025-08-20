@@ -33,6 +33,7 @@ namespace IntunePackagingTool
 
         private void OkButton_Click(object sender, RoutedEventArgs e)
         {
+            // Validation
             if (string.IsNullOrWhiteSpace(KeyPathCombo.Text))
             {
                 MessageBox.Show("Please enter a registry key path.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -58,6 +59,7 @@ namespace IntunePackagingTool
                 return;
             }
 
+            // Create the detection rule
             DetectionRule = new DetectionRule
             {
                 Type = DetectionRuleType.Registry,
